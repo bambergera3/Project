@@ -41,7 +41,7 @@ $players = searchPlayers($term, $database);
         <br/>
 		<?php foreach($players as $player) : ?>
          <img src = images/<?php echo $player['playerid']; ?>.jpg alt=<?php echo $player['name']; ?> align="left" style = width:300;height:300>
-            <p>
+            <p class="info">
 				<?php echo $player['name']; ?><br />
 				#<?php echo $player['number']; ?>
                 <?php echo $player['position']; ?> 
@@ -53,8 +53,12 @@ $players = searchPlayers($term, $database);
 		<?php endforeach; ?>
 		
 		<!-- print currently accessed by the current username -->
+		<p>Currently logged in as: <?php echo $fan->getName(); ?></p>
 		
 		<!-- A link to the logout.php file -->
+		<p>
+			<a href="logout.php">Log Out</a>
+		</p>
 	</div>
 </body>
 </html>

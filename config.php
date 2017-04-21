@@ -19,13 +19,13 @@ session_start();
 $current_url = basename($_SERVER['REQUEST_URI']);
 
 //load class Fan
-//my_autoloader('Fan');
+my_autoloader('Fan');
 
 // if fanID isn't set and current url is not login.php
 if (!isset($_SESSION["fanID"]) && $current_url != 'login.php') {
     
     //send to login page
-    //header("Location: login.php");
+    header("Location: login.php");
 }
 
 

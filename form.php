@@ -19,105 +19,40 @@ $player = null;
 // If book isbn is not empty, get book record into $book variable from the database
 //     Set $book equal to the first book in $books
 // 	   Set $book_categories equal to a list of categories associated to a book from the database
-if(!empty($isbn)) {
-	$sql = file_get_contents('sql/getBook.sql');
+if(!empty($playerid)) {
+	$sql = file_get_contents('sql/getPlayer.sql');
 	$params = array(
-		'isbn' => $isbn
+		'playerid' => $playerid
 	);
 	$statement = $database->prepare($sql);
 	$statement->execute($params);
-	$books = $statement->fetchAll(PDO::FETCH_ASSOC);
+	$players = $statement->fetchAll(PDO::FETCH_ASSOC);
 	
-	$book = $books[0];
-	
-	// Get book categories
-	$sql = file_get_contents('sql/getBookCategories.sql');
-	$params = array(
-		'isbn' => $isbn
-	);
-	$statement = $database->prepare($sql);
-	$statement->execute($params);
-	$book_categories_associative = $statement->fetchAll(PDO::FETCH_ASSOC);
-	
-	foreach($book_categories_associative as $category) {
-		$book_categories[] = $category['categoryid'];
-	}
+	$player = $players[0];
 }
-
-// Get an associative array of categories
-$sql = file_get_contents('sql/getCategories.sql');
-$statement = $database->prepare($sql);
-$statement->execute();
-$categories = $statement->fetchAll(PDO::FETCH_ASSOC); 
 
 // If form submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	$isbn = $_POST['isbn'];
-	$title = $_POST['book-title'];
-	$book_categories = $_POST['book-category'];
-	$author = $_POST['book-author'];
-	$price = $_POST['book-price'];
-	
-	if($action == 'add') {
-		// Insert book
-		$sql = file_get_contents('sql/insertBook.sql');
-		$params = array(
-			'isbn' => $isbn,
-			'title' => $title,
-			'author' => $author,
-			'price' => $price
-		);
-	
-		$statement = $database->prepare($sql);
-		$statement->execute($params);
+	$name = $_POST['name'];
+	$team = $_POST['team'];
+	$country = $_POST['country'];
+	$position = $_POST['position'];
+	$number = $_POST['number'];
 		
-		// Set categories for book
-		$sql = file_get_contents('sql/insertBookCategory.sql');
-		$statement = $database->prepare($sql);
-		
-		foreach($book_categories as $category) {
-			$params = array(
-				'isbn' => $isbn,
-				'categoryid' => $category
-			);
-			$statement->execute($params);
-		}
-	}
 	
-	elseif ($action == 'edit') {
-		$sql = file_get_contents('sql/updateBook.sql');
-        $params = array( 
-            'isbn' => $isbn,
-            'title' => $title,
-            'author' => $author,
-            'price' => $price
-        );
+    $sql = file_get_contents('sql/updatePlayer.sql');
+    $params = array(
+        'playerid' => $playerid,
+        'name' => $name,
+        'team' => $team,
+        'country' => $country,
+        'position' => $position,
+        'number' => $number
+     );
         
-        $statement = $database->prepare($sql);
-        $statement->execute($params);
+    $statement = $database->prepare($sql);
+    $statement->execute($params);
         
-        //remove current category info 
-        $sql = file_get_contents('sql/removeCategories.sql');
-        $params = array(
-            'isbn' => $isbn
-        );
-        
-        $statement = $database->prepare($sql);
-        $statement->execute($params);
-        
-        //set categories for book
-        $sql = file_get_contents('sql/insertBookCategory.sql');
-        $statement = $database->prepare($sql);
-        
-        foreach($book_categories as $category) {
-            $params = array(
-                'isbn' => $isbn,
-                'categoryid' => $category
-            );
-            $statement->execute($params);
-        };	
-	}
-	
 	// Redirect to book listing page
 	header('location: index.php');
 }
@@ -132,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
 	<meta charset="utf-8">
 	
-  	<title>Manage Book</title>
+  	<title>Edit Player</title>
 	<meta name="description" content="The HTML5 Herald">
 	<meta name="author" content="SitePoint">
 
@@ -144,37 +79,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 	<div class="page">
-		<h1>Manage Book</h1>
-		<form action="" method="POST">
+		<h1>Edit Player</h1>
+        <form action="" method="POST">
 			<div class="form-element">
-				<label>ISBN:</label>
-				<?php if($action == 'add') : ?>
-					<input type="text" name="isbn" class="textbox" value="<?php echo $book['isbn'] ?>" />
-				<?php else : ?>
-					<input readonly type="text" name="isbn" class="textbox" value="<?php echo $book['isbn'] ?>" />
-				<?php endif; ?>
+				<label>Name:</label>
+				<input type="text" name="name" class="textbox" value="<?php echo $player['name'] ?>" />
 			</div>
 			<div class="form-element">
-				<label>Title:</label>
-				<input type="text" name="book-title" class="textbox" value="<?php echo $book['title'] ?>" />
+				<label>Team:</label>
+				<input type="text" name="team" class="textbox" value="<?php echo $player['team'] ?>" />
 			</div>
 			<div class="form-element">
-				<label>Category:</label>
-				<?php foreach($categories as $category) : ?>
-					<?php if(in_array($category['categoryid'], $book_categories)) : ?>
-						<input checked class="radio" type="checkbox" name="book-category[]" value="<?php echo $category['categoryid'] ?>" /><span class="radio-label"><?php echo $category['name'] ?></span><br />
-					<?php else : ?>
-						<input class="radio" type="checkbox" name="book-category[]" value="<?php echo $category['categoryid'] ?>" /><span class="radio-label"><?php echo $category['name'] ?></span><br />
-					<?php endif; ?>
-				<?php endforeach; ?>
+				<label>Country:</label>
+                <input readonly type="text" name="country" class="textbox" value="<?php echo $player['country'] ?>" />
 			</div>
 			<div class="form-element">
-				<label>Author</label>
-				<input type="text" name="book-author" class="textbox" value="<?php echo $book['author'] ?>" />
+				<label>Position:</label>
+				<input type="text" name="position" class="textbox" value="<?php echo $player['position'] ?>" />
 			</div>
 			<div class="form-element">
-				<label>Price:</label>
-				<input type="number" step="any" name="book-price" class="textbox" value="<?php echo $book['price'] ?>" />
+				<label>Number:</label>
+				<input type="number" name="number" class="textbox" min = "0" max="99" value="<?php echo $player['number'] ?>" />
 			</div>
 			<div class="form-element">
 				<input type="submit" class="button" />&nbsp;
